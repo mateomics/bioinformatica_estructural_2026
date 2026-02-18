@@ -38,7 +38,7 @@ def leer_fasta_alineado(filepath):
 secuencias = leer_fasta_alineado("./foldmason_aa.fa")
 ids = ['./3bjicif_A.pdb', './1X86cif_E.pdb']
 
-pdb = [{"file": (prefix := id), "align": secuencias[Path(prefix).stem]} for id in ids]
+pdb = [{"file": (f"../data/{id}"), "align": secuencias[Path(id).stem]} for id in ids]
 
 
 # 1) subrutinas
@@ -248,31 +248,35 @@ def calcula_superposicion_SVD(pdbh1, pdbh2, originalPDBname, fittedPDBname, test
 	return sqrt(rmsd)
 
 
-# 2) programa principal ###################################################
 
-pdb[0]['coords'] = lee_coordenadas_PDB(pdb[0]['file'])
-pdb[1]['coords'] = lee_coordenadas_PDB(pdb[1]['file'])
+def main():
+	pdb[0]['coords'] = lee_coordenadas_PDB(pdb[0]['file'])
+	pdb[1]['coords'] = lee_coordenadas_PDB(pdb[1]['file'])
 
-print("# total residuos: pdb1 = %s pdb2 = %s\n" %
-	(len(pdb[0]['coords']), len(pdb[1]['coords'])))
+	print("# total residuos: pdb1 = %s pdb2 = %s\n" %
+		(len(pdb[0]['coords']), len(pdb[1]['coords'])))
 
-(pdb[0]['align_coords'], pdb[1]['align_coords']) = coords_alineadas(
-	pdb[0]['align'], pdb[0]['coords'],
-	pdb[1]['align'], pdb[1]['coords']
-)
+	(pdb[0]['align_coords'], pdb[1]['align_coords']) = coords_alineadas(
+		pdb[0]['align'], pdb[0]['coords'],
+		pdb[1]['align'], pdb[1]['coords']
+	)
 
-print("# total residuos alineados = %s\n" %
-	(len(pdb[0]['align_coords'])))
+	print("# total residuos alineados = %s\n" %
+		(len(pdb[0]['align_coords'])))
 
-rmsd = calcula_superposicion_SVD(
-	pdb[1], pdb[0],
-	'original.pdb',
-	'align_fit.pdb'
-)
+	rmsd = calcula_superposicion_SVD(
+		pdb[1], pdb[0],
+		'original.pdb',
+		'align_fit.pdb'
+	)
 
-print("\n# coordenadas originales = original.pdb\n# superposicion optima:\n")
-print("# archivo PDB = align_fit.pdb\n# RMSD = %1.2f Angstrom\n" % (rmsd))
+	print("\n# coordenadas originales = original.pdb\n# superposicion optima:\n")
+	print("# archivo PDB = align_fit.pdb\n# RMSD = %1.2f Angstrom\n" % (rmsd))
 
-print(f"# porcentaje de identidad en alineamiento de archivos "
-	  f"{pdb[0]['file']} y {pdb[1]['file']}: "
-	  f"{porcentaje_identidad(pdb[0]['align'], pdb[1]['align']):.2f}%\n")
+	print(f"# porcentaje de identidad en alineamiento de archivos "
+		f"{pdb[0]['file']} y {pdb[1]['file']}: "
+		f"{porcentaje_identidad(pdb[0]['align'], pdb[1]['align']):.2f}%\n")
+
+
+if __name__ == "__main__":
+	main()

@@ -1,0 +1,12 @@
+# total residuos: pdb1 = 372 pdb2 = 336
+
+# total residuos alineados = 299
+
+
+# coordenadas originales = original.pdb
+# superposicion optima:
+
+# archivo PDB = align_fit.pdb
+# RMSD = 5.16 Angstrom
+
+# porcentaje de identidad en alineamiento de archivos ./3bjicif_A.pdb y ./1X86cif_E.pdb: 22.07%

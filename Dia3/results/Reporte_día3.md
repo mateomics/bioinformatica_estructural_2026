@@ -69,6 +69,18 @@ Una vez realizadas estas predicciones, podemos proceder a comparar las estructur
 # porcentaje de identidad en alineamiento de archivos ../../Dia3/data/5TPT.pdb y ../../Dia3/data/5TPT_pred_lstItr.pdb: 100.00%
 ```
 
+### Comparación en base a otras metricas 
+Para completar el analisis realizado se utilizo la herramienta de [swissmodel](https://swissmodel.expasy.org/assess/85LJQe/01), con el obejtivo de obtener metricas de similitud basada enn la estructura como el TM-score y la RSSMD y otras independientes del mismo como el IDDT.  
+
+| Medida | Valor | 
+|:-------:|:------:| 
+| IDDT | 0.38 |
+| TM-score | 0.51 | 
+| RMSD | 1.11 | 
 
 
+![Fig5](swiss_img.png)
+Fig 5.Solapamiento entre estructura cristalografica y la predicdha coloreada por el por el IDDT
 
+### Conclusión 
+Los algoritmos de predicción en base a la estructura utilizan distintas aproximaciones para realizar la resolución estructural en base a la secuencia cruda, dentro el mismo procedimiento se busca homología entre secuencias para inferir posibles estructuras putativas en base a la homología o la inferencia de contactos por correlaciones entre sitios, en particular alfa fold2 parte de los alineamientos multiples para obtener información co-evolutiva entre las secuencias con el ideal de obtener distancias, contactos y angulos, como un algoritmo de aprendizaje de maquina basado en redes neuronales profundas obtiene distancias predichas de carbonos $\beta$ y anogulos $\psi$ y $\phi$ de la secuencia proteica, posteriormente hace la minimización de gradientes y relajación del esqueleto así como refinamiento de las cadenas laterales. Ya que este metodo se basa en la información registrada en las bases de datos de referencia que se tiene la predicción de nuestra secuencia que tiene una estructura cristalografica resgistrada tiene una mayor confianza, reflejada en su alto pLDDT en su estructura y alta similaridad con la estructura de referencia obtenida en PDB, con un bajon en el IDDT debido a unos choques ubicados en las partes exteriores de las alfas helices.

@@ -4,6 +4,7 @@ from __future__ import print_function
 from pathlib import Path
 from math import sqrt
 import SVD
+import argparse as agp
 
 """ prog3.1 Calcula la superposicion en 3D equivalente a un alineamiento de 
 secuencia de dos proteinas del PDB. Genera un fichero PDB con la superposicion 
@@ -33,13 +34,6 @@ def leer_fasta_alineado(filepath):
 			secuencias[header] += line
 
 	return secuencias
-
-
-secuencias = leer_fasta_alineado("./foldmason_aa.fa")
-ids = ['./3bjicif_A.pdb', './1X86cif_E.pdb']
-
-pdb = [{"file": (f"../data/{id}"), "align": secuencias[Path(id).stem]} for id in ids]
-
 
 # 1) subrutinas
 def lee_coordenadas_PDB(filename):
@@ -248,8 +242,42 @@ def calcula_superposicion_SVD(pdbh1, pdbh2, originalPDBname, fittedPDBname, test
 	return sqrt(rmsd)
 
 
+def parser(): 
+	"""
+	Funcion para parsear argumentos de linea de comandos
+	""" 
+	#creamos el parser
+	parser = agp.ArgumentParser(description="Parser para el programa prog3.1_modified.py") 
+	#agregamos los argumentos
+	parser.add_argument("-f", "--fasta",
+						default="./foldmason_aa.fa", 
+						type=str, 
+						required=True, 
+						help="Path del archivo FASTA con las secuencias alineadas") 
+	parser.add_argument("-i", "--id", 
+						type=str, 
+						required=True, 
+						help="IDs de las proteinas a analizar, separados por comas") 
+	parser.add_argument("-d", "--data",
+						default="../data/",
+						type=str,
+						help="Path del directorio que contiene los archivos")
+	#leemos los argumentos pasados y los guardamos en un objeto
+	args = parser.parse_args() 
+	return args
 
 def main():
+	"""
+	Funcion principal del programa, que se encarga de ejecutar el flujo completo del programa 
+	"""
+	#Obtenemos y asignamos los argumentos de linea de comandos
+	args = parser()
+	path=args.data
+	secuencias = leer_fasta_alineado(path + args.fasta)
+	ids = [path + id.strip() for id in args.id.split(",")] 
+
+	pdb = [{"file": (f"../data/{id}"), "align": secuencias[Path(id).stem]} for id in ids]
+
 	pdb[0]['coords'] = lee_coordenadas_PDB(pdb[0]['file'])
 	pdb[1]['coords'] = lee_coordenadas_PDB(pdb[1]['file'])
 

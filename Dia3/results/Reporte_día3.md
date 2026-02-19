@@ -47,7 +47,7 @@ Fig 2. Última iteración (005) de la predicción AlphaFold2
 ![Fig3](5TPT_alphaFold2_predicted_renderStr.png)  
 Fig 3. Estructura final predicha por el algoritmo, nuevamente coloreada por el pLDDT
 
-![[Fig4](pLDDT_scale.png)  
+![Fig4](pLDDT_scale.png)  
 Fig 4. Escala de color de la calificación por pLDDT
 
 ### Comparación

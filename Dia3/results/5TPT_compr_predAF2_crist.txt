@@ -1,0 +1,15 @@
+#Resultados de la comparación de la estructura de 5TPT critalografica y predicha por alfa fold 2 
+#Resultados del script prog3.1_modified.py:python prog3.1_modified.py -f rcsb_pdb_5TPT.fasta -i 5TPT,5TPT_pred_lstItr -d ../../Dia3/data/ 
+
+# total residuos: pdb1 = 197 pdb2 = 197
+
+# total residuos alineados = 197
+
+
+# coordenadas originales = original.pdb
+# superposicion optima:
+
+# archivo PDB = align_fit.pdb
+# RMSD = 1.27 Angstrom
+
+# porcentaje de identidad en alineamiento de archivos ../../Dia3/data/5TPT.pdb y ../../Dia3/data/5TPT_pred_lstItr.pdb: 100.00% 

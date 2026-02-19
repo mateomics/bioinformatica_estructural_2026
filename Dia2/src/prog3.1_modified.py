@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import print_function
 from pathlib import Path
 from math import sqrt
@@ -259,7 +257,7 @@ def parser():
 						required=True, 
 						help="IDs de las proteinas a analizar, separados por comas") 
 	parser.add_argument("-d", "--data",
-						default="../data/",
+						default="",
 						type=str,
 						help="Path del directorio que contiene los archivos")
 	#leemos los argumentos pasados y los guardamos en un objeto
@@ -276,7 +274,7 @@ def main():
 	secuencias = leer_fasta_alineado(path + args.fasta)
 	ids = [path + id.strip() for id in args.id.split(",")] 
 
-	pdb = [{"file": (f"../data/{id}"), "align": secuencias[Path(id).stem]} for id in ids]
+	pdb = [{"file": (id + ".pdb"), "align": secuencias[Path(id).stem]} for id in ids]
 
 	pdb[0]['coords'] = lee_coordenadas_PDB(pdb[0]['file'])
 	pdb[1]['coords'] = lee_coordenadas_PDB(pdb[1]['file'])

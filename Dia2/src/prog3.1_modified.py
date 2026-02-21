@@ -2,6 +2,7 @@ from __future__ import print_function
 from pathlib import Path
 from math import sqrt
 import argparse as agp
+import pandas as pd
 import SVD, gemmi, re,os
 
 
@@ -11,6 +12,29 @@ secuencia de dos proteinas del PDB. Genera un fichero PDB con la superposicion
 obtenida. """
 
 __author__  = 'Bruno Contreras-Moreira' 
+
+
+def summary(text:str, write:str="summary_prog3_1.txt")->None: 
+    """
+    Function to write a file with a summary of the search 
+    
+    Arguments: 
+        -text: the information to be written
+        -write: the file that would be written 
+    
+    """ 
+    #make sure the path already exist
+    direc= os.path.join("../results")
+    if not os.path.exists(direc):
+        os.mkdir(direc) 
+    
+    #get the path of the file 
+    summaryfile=os.path.join(direc,write)
+    
+    #finaly we write the content we want 
+    with open (summaryfile, "a") as sum: 
+        sum.write(text)
+
 
 # 0) parametros del algoritmo: 
 def leer_fasta_alineado(filepath):
@@ -275,6 +299,10 @@ def parser():
 						default="",
 						type=str,
 						help="Path del directorio que contiene los archivos")
+	parser.add_argument("-a","--all",
+						default=False,
+						action="store_true",
+						help="Flag para especificar si se quiere que se haga la comparación de todas las estructuras")
 	#leemos los argumentos pasados y los guardamos en un objeto
 	args = parser.parse_args() 
 	return args
@@ -286,43 +314,80 @@ def main():
 	#Obtenemos y asignamos los argumentos de linea de comandos
 	args = parser()
 	path=args.data
+	all_Flag=args.all
 	secuencias = leer_fasta_alineado(path + args.fasta)
-	ids = [path + id.strip() for id in args.id.split(",")] 
+	if all_Flag: 
+		ids=[path + id for id in secuencias.keys()]
+	else:
+		ids = [path + id.strip() for id in args.id.split(",")] 
+	
+	for id_1 in ids:
+		print(f"================================================\nAnalizando secuencia {id_1}\n================================================")
+		summary(f"================================================\nAnalizando secuencia {id_1}\n================================================")
+		col_names=[]
+		row=[]
+		id_stem=Path(id_1).stem
+		for id_2 in (ids:=ids.remove(id_1)): 
+			col_names.append(f"RSMD-{id_2}")
+			col_names.append(f"piden-{id_2}")
+			pdb = [{"file": (id + ".pdb"), "align": secuencias[Path(id).stem]} for id in [id_1,id_2]]
+			#comprobamos si son archivos pdb 
+			for dic in pdb: 
+				if not os.path.isfile(str_for:=dic["file"]):
+					str_for=re.sub(r"\.[^.]*$", ".cif", str_for)
+					dic["file"]=convertir_for(str_for)
 
-	pdb = [{"file": (id + ".pdb"), "align": secuencias[Path(id).stem]} for id in ids]
-	#comprobamos si son archivos pdb 
-	for dic in pdb: 
-		if not os.path.isfile(str_for:=dic["file"]):
-			str_for=re.sub(r"\.[^.]*$", ".cif", str_for)
-			dic["file"]=convertir_for(str_for)
+			pdb[0]['coords'] = lee_coordenadas_PDB(pdb[0]['file'])
+			pdb[1]['coords'] = lee_coordenadas_PDB(pdb[1]['file'])
 
-	pdb[0]['coords'] = lee_coordenadas_PDB(pdb[0]['file'])
-	pdb[1]['coords'] = lee_coordenadas_PDB(pdb[1]['file'])
+			print("=========================================================")
+			print(f"Comenzando el analisis de las secuncias {id_1}-{id_2}")
+			summary(f"=========================================================\nComenzando el analisis de las secuncias {id_1}-{id_2}")
 
-	print("# total residuos: pdb1 = %s pdb2 = %s\n" %
-		(len(pdb[0]['coords']), len(pdb[1]['coords'])))
+			print("# total residuos: pdb1 = %s pdb2 = %s\n" %
+				(len(pdb[0]['coords']), len(pdb[1]['coords'])))
 
-	(pdb[0]['align_coords'], pdb[1]['align_coords']) = coords_alineadas(
-		pdb[0]['align'], pdb[0]['coords'],
-		pdb[1]['align'], pdb[1]['coords']
-	)
+			summary("# total residuos: pdb1 = %s pdb2 = %s\n" %
+				(len(pdb[0]['coords']), len(pdb[1]['coords'])))
+			
 
-	print("# total residuos alineados = %s\n" %
-		(len(pdb[0]['align_coords'])))
+			(pdb[0]['align_coords'], pdb[1]['align_coords']) = coords_alineadas(
+				pdb[0]['align'], pdb[0]['coords'],
+				pdb[1]['align'], pdb[1]['coords']
+			)
 
-	rmsd = calcula_superposicion_SVD(
-		pdb[1], pdb[0],
-		'original.pdb',
-		'align_fit.pdb'
-	)
+			print("# total residuos alineados = %s\n" %
+				(len(pdb[0]['align_coords'])))
+			summary("# total residuos alineados = %s\n" %
+				(len(pdb[0]['align_coords'])))
 
-	print("\n# coordenadas originales = original.pdb\n# superposicion optima:\n")
-	print("# archivo PDB = align_fit.pdb\n# RMSD = %1.2f Angstrom\n" % (rmsd))
+			org_coords=f'original_{id_1}_{id_2}.pdb'
+			archivo_pdb=f'align_fit_{id_1}_{id_2}.pdb'
 
-	print(f"# porcentaje de identidad en alineamiento de archivos "
-		f"{pdb[0]['file']} y {pdb[1]['file']}: "
-		f"{porcentaje_identidad(pdb[0]['align'], pdb[1]['align']):.2f}%\n")
+			rmsd = calcula_superposicion_SVD(
+				pdb[1], pdb[0],
+				org_coords,
+				archivo_pdb
+			)
+			row.append(rmsd)
 
+			print("\n# coordenadas originales = %s\n# superposicion optima:\n" %(org_coords))
+			summary("\n# coordenadas originales = %s\n# superposicion optima:\n" %(org_coords))
+			print("# archivo PDB = %s\n# RMSD = %1.2f Angstrom\n" % (archivo_pdb,rmsd))
+			summary("# archivo PDB = %s\n# RMSD = %1.2f Angstrom\n" % (archivo_pdb,rmsd))
 
+			porcentaje_iden=porcentaje_identidad(pdb[0]['align'], pdb[1]['align'])
+			print(f"# porcentaje de identidad en alineamiento de archivos "
+				f"{pdb[0]['file']} y {pdb[1]['file']}: "
+				f"{porcentaje_iden:.2f}%\n")
+			summary(f"# porcentaje de identidad en alineamiento de archivos\n{pdb[0]['file']} y {pdb[1]['file']}:\n{porcentaje_iden:.2f}%\n")
+
+			row.append(porcentaje_iden)
+		
+		data_fram_id=pd.DataFrame.from_dict({id_stem:row}, orient="index")
+		data_fram_id.columns=col_names 
+		data_fram_id.to_csv(f"../results/{id_stem}_all.csv", sep="\t") 
+
+	
 if __name__ == "__main__":
 	main()

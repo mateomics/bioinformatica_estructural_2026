@@ -1,5 +1,11 @@
 #!/bin/bash 
-#$-N
+#$ -N merge_align_sq
+#$ -S /bin/bash
+#$ -o salida-$JOB_NAME-$JOB_ID.out
+#$ -e salida-$JOB_NAME-$JOB_ID.err
+#$ -q default
+#$ -pe smp 8
+#$ -l h_rt=01:00:00
 #script utilzado para hacer el merge de dos secuencias fasta o más para posteriormente realizar el alineamiento multiple mediante clustalo 
 #Argumentos 
 #   $1:path del primer fasta
@@ -23,8 +29,8 @@ fi
 if [[ ! -d "../results" ]]; then
     mkdir ../results
 fi
-out_merge="../data/${id}_merge.fa"
-out_alig="../results/${id}_merge.fa"
+out_merge="../data/${id1}_merge.fa"
+out_alig="../results/${id1}_align_pdb_swiss.fa"
 
 #Primeros recuperamos las secuencias 
 seq_1=$(awk -v id="$id1" '$0 ~ "^>"id {flag=1; next}/^>/ {flag=0} flag{printf "%s", $0}' "$fasta1")
@@ -32,7 +38,9 @@ seq_1=$(awk -v id="$id1" '$0 ~ "^>"id {flag=1; next}/^>/ {flag=0} flag{printf "%
 seq_2=$(awk -v id="$id2" '$0 ~ "^>"id {flag=1; next}/^>/ {flag=0} flag{printf "%s", $0}' "$fasta2") 
 
 echo ">$id1" > "$out_merge"
-echo "${seq_1}\n>${id2}\n${seq_2}" >> "$out_merge"
+echo "$seq_1" >> "$out_merge"
+echo ">$id2" >> "$out_merge"
+echo "$seq_2">> "$out_merge"
 #realizamos el alienamiento con clustalo 
 
-clustalo -i "$out_merge" --iter 2 --use-kimura -o "$out_alig" --outfmt sta  --threads 4 
+clustalo -i "$out_merge" --iter 2 --use-kimura -o "$out_alig" --threads 4 

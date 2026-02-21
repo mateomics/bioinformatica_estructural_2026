@@ -1,8 +1,10 @@
 from __future__ import print_function
 from pathlib import Path
 from math import sqrt
-import SVD
 import argparse as agp
+import SVD, gemmi, re,os
+
+
 
 """ prog3.1 Calcula la superposicion en 3D equivalente a un alineamiento de 
 secuencia de dos proteinas del PDB. Genera un fichero PDB con la superposicion 
@@ -239,6 +241,19 @@ def calcula_superposicion_SVD(pdbh1, pdbh2, originalPDBname, fittedPDBname, test
 
 	return sqrt(rmsd)
 
+def convertir_for(cif_file): 
+	"""
+	Funcion que convierte entre formatos para el analisis  
+	"""
+	structure = gemmi.read_structure(cif_file)
+	structure.remove_empty_chains() 
+	name_pdb= re.sub(r"\.[^.]*$", ".pdb", cif_file)
+	try: 
+		structure.write_pdb(name_pdb)
+	except ValueError:
+		raise("Error al intentar transformar el formato, es posible que sea una estructura cristalografica")
+
+	return(name_pdb)	
 
 def parser(): 
 	"""
@@ -275,6 +290,11 @@ def main():
 	ids = [path + id.strip() for id in args.id.split(",")] 
 
 	pdb = [{"file": (id + ".pdb"), "align": secuencias[Path(id).stem]} for id in ids]
+	#comprobamos si son archivos pdb 
+	for dic in pdb: 
+		if not os.path.isfile(str_for:=dic["file"]):
+			str_for=re.sub(r"\.[^.]*$", ".cif", str_for)
+			dic["file"]=convertir_for(str_for)
 
 	pdb[0]['coords'] = lee_coordenadas_PDB(pdb[0]['file'])
 	pdb[1]['coords'] = lee_coordenadas_PDB(pdb[1]['file'])
